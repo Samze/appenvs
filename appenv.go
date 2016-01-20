@@ -67,13 +67,13 @@ func (a *AppEnv) GetJsonAndFormat(key string, cliOut []string) string {
 	return ""
 }
 
-func (a *AppEnv) GetEnvs(cli plugin.CliConnection, args []string) (string, error) {
+func (a *AppEnv) GetEnvs(cli plugin.CliConnection, args []string) ([]string, error) {
 	if loggedIn, _ := cli.IsLoggedIn(); loggedIn == false {
-		return "", errors.New("You must login first!")
+		return nil, errors.New("You must login first!")
 	}
 
 	if len(args) <= 1 {
-		return "", errors.New("You must specify an app name")
+		return nil, errors.New("You must specify an app name")
 	}
 
 	cliOut, err := a.GetAppEnvFromCli(cli, args[1])
@@ -81,15 +81,17 @@ func (a *AppEnv) GetEnvs(cli plugin.CliConnection, args []string) (string, error
 	vcapServicesExport := a.GetJsonAndFormat("VCAP_SERVICES", cliOut)
 	vcapAppExport := a.GetJsonAndFormat("VCAP_APPLICATION", cliOut)
 
+	envvars := []string{}
+
 	if vcapServicesExport != "" {
-		fmt.Println(vcapServicesExport)
+		envvars = append(envvars, vcapServicesExport)
 	}
 
 	if vcapAppExport != "" {
-		fmt.Println(vcapAppExport)
+		envvars = append(envvars, vcapAppExport)
 	}
 
-	return "", err
+	return envvars, err
 }
 
 func (a *AppEnv) Run(cli plugin.CliConnection, args []string) {
@@ -97,9 +99,13 @@ func (a *AppEnv) Run(cli plugin.CliConnection, args []string) {
 		return
 	}
 
-	_, err := a.GetEnvs(cli, args)
+	envVars, err := a.GetEnvs(cli, args)
 
 	panicOnError(err)
+
+	for _, env := range envVars {
+		fmt.Println(env)
+	}
 }
 
 func (a *AppEnv) GetMetadata() plugin.PluginMetadata {
