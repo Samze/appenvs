@@ -48,12 +48,13 @@ var _ = Describe("appenv", func() {
 
 	Context("when getting vcap_services", func() {
 		appname := "APP_NAME"
+		var result string
 		BeforeEach(func() {
 			fakeCliConnection.CliCommandWithoutTerminalOutputReturns([]string{"something"}, nil)
-			appenv.GetEnvs(fakeCliConnection, []string{appname})
+			result, _ = appenv.GetEnvs(fakeCliConnection, []string{"something", appname})
 		})
 
-		It("calls cli with env", func() {
+		It("calls cli", func() {
 			Expect(fakeCliConnection.CliCommandWithoutTerminalOutputCallCount()).
 				To(Not(BeZero()))
 		})

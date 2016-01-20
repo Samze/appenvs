@@ -2,6 +2,8 @@ package main
 
 import (
 	"errors"
+	"fmt"
+	"os"
 
 	"github.com/cloudfoundry/cli/plugin"
 )
@@ -17,11 +19,11 @@ func (a *AppEnv) GetEnvs(cli plugin.CliConnection, args []string) (string, error
 		return "", errors.New("You must login first!")
 	}
 
-	if len(args) == 0 {
+	if len(args) <= 1 {
 		return "", errors.New("You must specify an app name")
 	}
 
-	_, err := cli.CliCommandWithoutTerminalOutput("env", args[0])
+	_, err := cli.CliCommandWithoutTerminalOutput("env", args[1])
 
 	return "", err
 }
@@ -31,7 +33,13 @@ func (a *AppEnv) Run(cli plugin.CliConnection, args []string) {
 		return
 	}
 
-	a.GetEnvs(cli, args)
+	_, err := a.GetEnvs(cli, args)
+
+	if err != nil {
+		fmt.Println("error: ", err)
+		os.Exit(1)
+	}
+
 }
 
 func (a *AppEnv) GetMetadata() plugin.PluginMetadata {
