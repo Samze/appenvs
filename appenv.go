@@ -12,12 +12,12 @@ func main() {
 	plugin.Start(new(AppEnv))
 }
 
-func (a *AppEnv) GetEnvs(cli plugin.CliConnection) (string, error) {
+func (a *AppEnv) GetEnvs(cli plugin.CliConnection, appName string) (string, error) {
 	if loggedIn, _ := cli.IsLoggedIn(); loggedIn == false {
 		return "", errors.New("oops")
 	}
 
-	_, err := cli.CliCommandWithoutTerminalOutput("env", "appname")
+	_, err := cli.CliCommandWithoutTerminalOutput("env", appName)
 
 	return "", err
 }
@@ -27,7 +27,9 @@ func (a *AppEnv) Run(cli plugin.CliConnection, args []string) {
 		return
 	}
 
-	a.GetEnvs(cli)
+	appName := "app"
+
+	a.GetEnvs(cli, appName)
 }
 
 func (a *AppEnv) GetMetadata() plugin.PluginMetadata {
