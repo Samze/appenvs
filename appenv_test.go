@@ -50,7 +50,7 @@ var _ = Describe("appenv", func() {
 		appname := "APP_NAME"
 		var result string
 		BeforeEach(func() {
-			fakeCliConnection.CliCommandWithoutTerminalOutputReturns([]string{"something"}, nil)
+			fakeCliConnection.CliCommandWithoutTerminalOutputReturns([]string{"hi"}, nil)
 			result, _ = appenv.GetEnvs(fakeCliConnection, []string{"something", appname})
 		})
 
@@ -62,6 +62,35 @@ var _ = Describe("appenv", func() {
 		It("requests the correct app envs", func() {
 			Expect(fakeCliConnection.CliCommandWithoutTerminalOutputArgsForCall(0)).
 				To(Equal([]string{"env", appname}))
+		})
+
+		It("returns vcap services", func() {
+
+		})
+	})
+
+	Context("parsing json app environment data", func() {
+
+		It("error handles invalid json", func() {
+			_, err := appenv.GetJson("TEST", []string{
+				"foo", "TEST: stuff",
+			})
+			Expect(err).To(Not(BeNil()))
+		})
+
+		It("handles missing key", func() {
+			_, err := appenv.GetJson("TEST", []string{
+				"bar", "foo",
+			})
+			Expect(err).To(Not(BeNil()))
+		})
+
+		It("returns the correct value", func() {
+			result, _ := appenv.GetJson("TEST", []string{
+				"foo", "{\"TEST\": [ \"stuff\" ]}", "boop",
+			})
+
+			Expect(result).To(Equal("[\"stuff\"]"))
 		})
 	})
 

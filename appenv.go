@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/cloudfoundry/cli/plugin"
 )
@@ -12,6 +14,45 @@ type AppEnv struct{}
 
 func main() {
 	plugin.Start(new(AppEnv))
+}
+
+func (a *AppEnv) GetAppEnvFromCli(cli plugin.CliConnection, appName string) ([]string, error) {
+	return cli.CliCommandWithoutTerminalOutput("env", appName)
+}
+
+func panicOnError(err error) {
+	if err != nil {
+		fmt.Println("error: ", err)
+		os.Exit(1)
+	}
+}
+
+func (a *AppEnv) GetJson(key string, out []string) (string, error) {
+	for _, line := range out {
+		if strings.Contains(line, key) {
+
+			bytes := []byte(line)
+
+			var j interface{}
+			err := json.Unmarshal(bytes, &j)
+
+			if err != nil {
+				return "", err
+			}
+
+			m := j.(map[string]interface{})
+
+			marshalledBytes, err := json.Marshal(m[key])
+
+			if err != nil {
+				return "", err
+			}
+
+			return string(marshalledBytes[:]), nil
+		}
+	}
+
+	return "", errors.New(fmt.Sprintf("%s not found", key))
 }
 
 func (a *AppEnv) GetEnvs(cli plugin.CliConnection, args []string) (string, error) {
@@ -23,7 +64,9 @@ func (a *AppEnv) GetEnvs(cli plugin.CliConnection, args []string) (string, error
 		return "", errors.New("You must specify an app name")
 	}
 
-	_, err := cli.CliCommandWithoutTerminalOutput("env", args[1])
+	out, err := a.GetAppEnvFromCli(cli, args[1])
+
+	a.GetJson("VCAP_APPLICATION", out)
 
 	return "", err
 }
@@ -35,11 +78,7 @@ func (a *AppEnv) Run(cli plugin.CliConnection, args []string) {
 
 	_, err := a.GetEnvs(cli, args)
 
-	if err != nil {
-		fmt.Println("error: ", err)
-		os.Exit(1)
-	}
-
+	panicOnError(err)
 }
 
 func (a *AppEnv) GetMetadata() plugin.PluginMetadata {
