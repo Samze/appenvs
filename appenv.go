@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/cloudfoundry/cli/plugin"
@@ -12,10 +13,19 @@ func main() {
 	plugin.Start(new(AppEnv))
 }
 
+func (a *AppEnv) GetEnvs(cli plugin.CliConnection) (string, error) {
+	if loggedIn, _ := cli.IsLoggedIn(); loggedIn == false {
+		return "", errors.New("oops")
+	}
+	return "", nil
+}
+
 func (a *AppEnv) Run(cli plugin.CliConnection, args []string) {
 	if len(args) > 0 && args[0] == "CLI-MESSAGE-UNINSTALL" {
 		return
 	}
+
+	a.GetEnvs(cli)
 
 	fmt.Println("test")
 }

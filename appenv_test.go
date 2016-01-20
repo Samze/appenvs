@@ -25,4 +25,12 @@ var _ = Describe("appenv", func() {
 			Expect(output).To(ConsistOf([]string{""}))
 		})
 	})
+
+	Context("when not logged in", func() {
+		It("returns an error", func() {
+			fakeCliConnection.IsLoggedInStub = func() (bool, error) { return false, nil }
+			_, err := appenv.GetEnvs(fakeCliConnection)
+			Expect(err).To(Not(BeNil()))
+		})
+	})
 })
