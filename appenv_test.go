@@ -94,4 +94,12 @@ var _ = Describe("appenv", func() {
 		})
 	})
 
+	Context("export env var", func() {
+
+		It("formats correctly", func() {
+			export := formatExportEnvvar("KEY", "VALUE")
+
+			Expect(export).To(Equal("export KEY='VALUE'"))
+		})
+	})
 })

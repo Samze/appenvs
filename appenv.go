@@ -55,6 +55,10 @@ func (a *AppEnv) GetJson(key string, out []string) (string, error) {
 	return "", errors.New(fmt.Sprintf("%s not found", key))
 }
 
+func formatExportEnvvar(key string, value string) string {
+	return fmt.Sprintf("export %s='%s'", key, value)
+}
+
 func (a *AppEnv) GetEnvs(cli plugin.CliConnection, args []string) (string, error) {
 	if loggedIn, _ := cli.IsLoggedIn(); loggedIn == false {
 		return "", errors.New("You must login first!")
@@ -64,9 +68,17 @@ func (a *AppEnv) GetEnvs(cli plugin.CliConnection, args []string) (string, error
 		return "", errors.New("You must specify an app name")
 	}
 
-	out, err := a.GetAppEnvFromCli(cli, args[1])
+	cliOut, err := a.GetAppEnvFromCli(cli, args[1])
 
-	a.GetJson("VCAP_APPLICATION", out)
+	vcapApp, errJson := a.GetJson("VCAP_APPLICATION", cliOut)
+	if errJson == nil {
+		fmt.Println(formatExportEnvvar("VCAP_APPLICATION", vcapApp))
+	}
+
+	vcapServices, errJson := a.GetJson("VCAP_SERVICES", cliOut)
+	if errJson == nil {
+		fmt.Println(formatExportEnvvar("VCAP_SERVICES", vcapServices))
+	}
 
 	return "", err
 }
