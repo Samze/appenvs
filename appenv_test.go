@@ -29,10 +29,20 @@ var _ = Describe("appenv", func() {
 	})
 
 	Context("when not logged in", func() {
-		It("returns an error", func() {
+		BeforeEach(func() {
 			fakeCliConnection.IsLoggedInStub = func() (bool, error) { return false, nil }
-			_, err := appenv.GetEnvs(fakeCliConnection, "")
-			Expect(err).To(Not(BeNil()))
+		})
+
+		It("returns an error message", func() {
+			_, err := appenv.GetEnvs(fakeCliConnection, []string{"app_name"})
+			Expect(err).To(MatchError("You must login first!"))
+		})
+	})
+
+	Context("when no app name is supplied", func() {
+		It("returns an error message", func() {
+			_, err := appenv.GetEnvs(fakeCliConnection, []string{})
+			Expect(err).To(MatchError("You must specify an app name"))
 		})
 	})
 
@@ -40,7 +50,7 @@ var _ = Describe("appenv", func() {
 		appname := "APP_NAME"
 		BeforeEach(func() {
 			fakeCliConnection.CliCommandWithoutTerminalOutputReturns([]string{"something"}, nil)
-			appenv.GetEnvs(fakeCliConnection, appname)
+			appenv.GetEnvs(fakeCliConnection, []string{appname})
 		})
 
 		It("calls cli with env", func() {

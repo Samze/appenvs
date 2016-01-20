@@ -12,12 +12,16 @@ func main() {
 	plugin.Start(new(AppEnv))
 }
 
-func (a *AppEnv) GetEnvs(cli plugin.CliConnection, appName string) (string, error) {
+func (a *AppEnv) GetEnvs(cli plugin.CliConnection, args []string) (string, error) {
 	if loggedIn, _ := cli.IsLoggedIn(); loggedIn == false {
-		return "", errors.New("oops")
+		return "", errors.New("You must login first!")
 	}
 
-	_, err := cli.CliCommandWithoutTerminalOutput("env", appName)
+	if len(args) == 0 {
+		return "", errors.New("You must specify an app name")
+	}
+
+	_, err := cli.CliCommandWithoutTerminalOutput("env", args[0])
 
 	return "", err
 }
@@ -27,9 +31,7 @@ func (a *AppEnv) Run(cli plugin.CliConnection, args []string) {
 		return
 	}
 
-	appName := "app"
-
-	a.GetEnvs(cli, appName)
+	a.GetEnvs(cli, args)
 }
 
 func (a *AppEnv) GetMetadata() plugin.PluginMetadata {
