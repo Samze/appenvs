@@ -59,6 +59,14 @@ func formatExportEnvvar(key string, value string) string {
 	return fmt.Sprintf("export %s='%s'", key, value)
 }
 
+func (a *AppEnv) GetJsonAndFormat(key string, cliOut []string) string {
+	json, err := a.GetJson(key, cliOut)
+	if err == nil {
+		return formatExportEnvvar(key, json)
+	}
+	return ""
+}
+
 func (a *AppEnv) GetEnvs(cli plugin.CliConnection, args []string) (string, error) {
 	if loggedIn, _ := cli.IsLoggedIn(); loggedIn == false {
 		return "", errors.New("You must login first!")
@@ -70,14 +78,15 @@ func (a *AppEnv) GetEnvs(cli plugin.CliConnection, args []string) (string, error
 
 	cliOut, err := a.GetAppEnvFromCli(cli, args[1])
 
-	vcapApp, errJson := a.GetJson("VCAP_APPLICATION", cliOut)
-	if errJson == nil {
-		fmt.Println(formatExportEnvvar("VCAP_APPLICATION", vcapApp))
+	vcapServicesExport := a.GetJsonAndFormat("VCAP_SERVICES", cliOut)
+	vcapAppExport := a.GetJsonAndFormat("VCAP_APPLICATION", cliOut)
+
+	if vcapServicesExport != "" {
+		fmt.Println(vcapServicesExport)
 	}
 
-	vcapServices, errJson := a.GetJson("VCAP_SERVICES", cliOut)
-	if errJson == nil {
-		fmt.Println(formatExportEnvvar("VCAP_SERVICES", vcapServices))
+	if vcapAppExport != "" {
+		fmt.Println(vcapAppExport)
 	}
 
 	return "", err
