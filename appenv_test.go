@@ -33,4 +33,19 @@ var _ = Describe("appenv", func() {
 			Expect(err).To(Not(BeNil()))
 		})
 	})
+
+	Context("when getting vcap_services", func() {
+		BeforeEach(func() {
+			fakeCliConnection.IsLoggedInStub = func() (bool, error) { return true, nil }
+		})
+
+		It("calls cli with env", func() {
+			fakeCliConnection.CliCommandWithoutTerminalOutputReturns([]string{"something"}, nil)
+
+			appenv.Run(fakeCliConnection, []string{})
+
+			Expect(fakeCliConnection.CliCommandWithoutTerminalOutputCallCount()).To(Not(BeZero()))
+		})
+	})
+
 })

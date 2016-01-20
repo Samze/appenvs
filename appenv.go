@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/cloudfoundry/cli/plugin"
 )
@@ -17,7 +16,10 @@ func (a *AppEnv) GetEnvs(cli plugin.CliConnection) (string, error) {
 	if loggedIn, _ := cli.IsLoggedIn(); loggedIn == false {
 		return "", errors.New("oops")
 	}
-	return "", nil
+
+	_, err := cli.CliCommandWithoutTerminalOutput("env", "appname")
+
+	return "", err
 }
 
 func (a *AppEnv) Run(cli plugin.CliConnection, args []string) {
@@ -26,8 +28,6 @@ func (a *AppEnv) Run(cli plugin.CliConnection, args []string) {
 	}
 
 	a.GetEnvs(cli)
-
-	fmt.Println("test")
 }
 
 func (a *AppEnv) GetMetadata() plugin.PluginMetadata {
