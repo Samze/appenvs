@@ -119,7 +119,10 @@ func (a *AppEnv) GetMetadata() plugin.PluginMetadata {
 		Commands: []plugin.Command{
 			plugin.Command{
 				Name:     "appenvs",
-				HelpText: "hello",
+				HelpText: "Export application environment variables locally.",
+				UsageDetails: plugin.Usage{
+					Usage: "appenvs APP_NAME",
+				},
 			},
 		},
 	}
